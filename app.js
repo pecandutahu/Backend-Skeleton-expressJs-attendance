@@ -5,9 +5,11 @@ const db = require('./models');
 const employeeRoutes = require('./routes/employee');
 const presenceRoutes = require('./routes/presence');
 const presenceTypeRoutes = require('./routes/presenceType');
+const setTimezone = require('./middlewares/timezone');
 
 const app = express();
 
+app.use(setTimezone);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

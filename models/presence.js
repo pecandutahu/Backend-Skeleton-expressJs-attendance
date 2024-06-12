@@ -15,8 +15,8 @@ module.exports = (sequelize, DataTypes) => {
       checkOutCoordinates: DataTypes.STRING,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
-  }, {
+    }, {
       paranoid : true //soft deletes
-  });
+    });
   };
   

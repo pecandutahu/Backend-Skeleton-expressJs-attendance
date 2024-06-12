@@ -6,6 +6,7 @@ const db = require('../models');
 const { check, validationResult } = require('express-validator');
 const { deleteFile } = require('../utils/fileUtils');
 const upload = require('../middlewares/upload');
+const moment = require('moment-timezone');
 
 const validatePresence = [
   check('employeeId').isLength({min:1}).withMessage("Employe is required").custom( value => {
@@ -37,10 +38,11 @@ router.post('/checkin', upload.single('images'), validatePresence, async (req, r
       return res.status(422).json({ errors: errors.array() });
     }
     const { employeeId, presenceTypeId } = req.body;
+    const checkInTime = req.currentTime().format(); // Waktu GMT +7
     const newPresence = await db.Presence.create({
       employeeId,
       presenceTypeId,
-      checkIn: new Date(),
+      checkIn: checkInTime,
       checkInImages: req.file.path,
       checkInCoordinates: req.body.coordinates
     });
@@ -75,12 +77,23 @@ router.post('/checkout',upload.single('images'), validatePresence, async (req, r
     }
 
     const { employeeId } = req.body;
+    
+    const now = req.currentTime().format();
+
     const presence = await db.Presence.findOne({
-      where: { employeeId, checkOut: null }
+      where: {
+        employeeId, 
+        checkOut: null,
+        checkIn : {
+            [db.Sequelize.Op.gte]: moment(now).startOf('day'),
+            [db.Sequelize.Op.lt]: moment(now).endOf('day'),
+        }
+      },
+      order: [['checkIn', 'ASC']]
     });
 
     if (presence) {
-      presence.checkOut = new Date();
+      presence.checkOut = req.currentTime().format();
       presence.checkOutImages= req.file.path;
       presence.checkOutCoordinates = req.body.coordinates;
       await presence.save();
@@ -94,9 +107,7 @@ router.post('/checkout',upload.single('images'), validatePresence, async (req, r
   } catch (error) {
     
     if (req.file && req.file.path) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting file:', err);
-      });
+      await deleteFile(req.file.path);
     }
     res.status(500).json({ error: 'An error occurred during check-in', details: error.message });
   }

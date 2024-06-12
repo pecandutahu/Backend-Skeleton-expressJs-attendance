@@ -3,3 +3,6 @@
 
 # folder uploads
 /uploads
+
+# sqlite
+database.sqlite
