@@ -12,7 +12,7 @@ db.Employee = require('./employee')(sequelize, DataTypes);
 db.Presence = require('./presence')(sequelize, DataTypes);
 db.PresenceType = require('./presenceType')(sequelize, DataTypes);
 
-db.Employee.hasMany(db.Presence, { foreignKey: 'presenceId' });
+db.Employee.hasMany(db.Presence, { foreignKey: 'employeeId' });
 db.Presence.belongsTo(db.Employee, { foreignKey: 'employeeId' });
 
 db.PresenceType.hasMany(db.Presence, {foreignKey: 'presenceTypeId'});

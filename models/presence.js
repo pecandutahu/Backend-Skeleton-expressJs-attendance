@@ -5,12 +5,14 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      nik: DataTypes.STRING,
+      employeeId: DataTypes.INTEGER,
       presenceTypeId: DataTypes.INTEGER,
       checkIn: DataTypes.DATE,
       checkOut: DataTypes.DATE,
-      images: DataTypes.STRING,
-      coordinates: DataTypes.GEOMETRY("POINT", 4326),
+      checkInImages: DataTypes.STRING,
+      checkOutImages: DataTypes.STRING,
+      checkInCoordinates: DataTypes.STRING,
+      checkOutCoordinates: DataTypes.STRING,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
   }, {

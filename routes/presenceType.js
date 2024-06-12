@@ -7,7 +7,7 @@ const presenceType = require('../models/presenceType');
 const { where, Op } = require('sequelize');
 
 const validatePersenceType = [
-  check('presenceType').isLength({ min: 2}).withMessage("Tipe presense minimal 2 karakter.")
+  check('presenceType').isLength({ min: 2}).withMessage("Type of presence requires a minimum of 2 characters.")
 ];
 
 router.get('/', async (req, res) => {
@@ -23,7 +23,7 @@ router.get('/trash', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const PresenceType = await db.PresenceType.findOne({ where : {presenceTypeId : req.params.id}});
   if(!PresenceType) {
-    return res.status(404).json('Data tidak ditemukan');
+    return res.status(404).json('Not found');
   }
   res.json(PresenceType);
 })
