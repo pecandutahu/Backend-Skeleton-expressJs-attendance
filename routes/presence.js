@@ -103,7 +103,15 @@ router.post('/checkout',upload.single('images'), validatePresence, async (req, r
 });
 
 router.get('/', async (req, res) => {
-  const presences = await db.Presence.findAll();
+  const presences = await db.Presence.findAll({
+    include: [
+      {
+        model : db.Employee
+      },
+      {
+        model : db.PresenceType
+      }
+    ]})
   res.json(presences);
 });
 
