@@ -7,6 +7,7 @@ const { check, validationResult } = require('express-validator');
 const { deleteFile } = require('../utils/fileUtils');
 const upload = require('../middlewares/upload');
 const moment = require('moment-timezone');
+const { where, Op } = require('sequelize');
 
 const validatePresence = [
   check('employeeId').isLength({min:1}).withMessage("Employe is required").custom( value => {
@@ -125,5 +126,36 @@ router.get('/', async (req, res) => {
     ]})
   res.json(presences);
 });
+
+router.get('/trash', async (req, res) => {
+  const presences = await db.Presence.findAll({ where : { deletedAt : {[Op.not]: null}}, paranoid : false });
+  res.json(presences);
+})
+
+router.get('/:id', async (req, res) => {
+  try {
+    const presence = await db.Presence.findByPk(req.params.id);
+    if (!presence) {
+      return res.status(400).json({
+        message: "Presence not found!",
+      });
+    }
+    res.json(presence);
+    
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred during process', details: error.message });
+  }
+})
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await db.Presence.destroy({ where: {
+      presenceId: req.params.id
+    }});
+    res.json({ message: 'Presence deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred during delete process', details: error.message });
+  }
+})
 
 module.exports = router;
