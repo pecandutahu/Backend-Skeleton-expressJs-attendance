@@ -5,12 +5,14 @@ const db = require('../models');
 const { where, Op } = require('sequelize');
 
 const validateEmployee = [
-    check('nik').isLength({min: 3 }).withMessage("NIK requires a minimum of 2 character.").custom( value => {
-        return db.Employee.findOne({ where: { nik: value } }).then(employee => {
-            if(employee!=null){
-                return Promise.reject("NIK " + employee.nik + " already registered")
+    check('nik').isLength({min: 3 }).withMessage("NIK requires a minimum of 2 character.").custom(async (value, { req }) => {
+        const employeeId = req.params.id || null;
+        const employee = await db.Employee.findOne({ where: { nik: value } });
+        if(employee){
+            if(employeeId != employee.employeeId){
+                return Promise.reject("NIK " + employee.nik + " already registered");
             }
-        })
+        }
     }),
     
     check('name').isString().withMessage('Name must be string.').isLength({ min:2 }).withMessage("The name requires a minimum of 2 characters"),
@@ -41,7 +43,12 @@ router.post('/', validateEmployee, async (req, res) => {
     res.json(newEmployee);
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateEmployee, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+
     const updateEmployee = await db.Employee.update(req.body, {
         where: { employeeId: req.params.id }
     });
