@@ -7,7 +7,8 @@ const { where, Op } = require('sequelize');
 const validateEmployee = [
     check('nik').isLength({min: 3 }).withMessage("NIK requires a minimum of 2 character.").custom(async (value, { req }) => {
         const employeeId = req.params.id || null;
-        const employee = await db.Employee.findOne({ where: { nik: value } });
+        const employee = await db.Employee.findOne({ where: { nik: value }, paranoid : false });
+        console.log(employee)
         if(employee){
             if(employeeId != employee.employeeId){
                 return Promise.reject("NIK " + employee.nik + " already registered");
