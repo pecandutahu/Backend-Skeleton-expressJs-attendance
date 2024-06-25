@@ -47,7 +47,7 @@ router.post('/checkin', upload.single('images'), validatePresence, async (req, r
       if (!isNaN(lat) && !isNaN(lng)) {
         coordinates = {
             type: "Point",
-            coordinates: [lng, lat] // GeoJSON expects [longitude, latitude]
+            coordinates: [lat, lng] // GeoJSON expects [longitude, latitude]
         };
       } else {
           console.error('Invalid coordinates provided');
@@ -101,7 +101,7 @@ router.post('/checkout',upload.single('images'), validatePresence, async (req, r
       if (!isNaN(lat) && !isNaN(lng)) {
         coordinates = {
             type: "Point",
-            coordinates: [lng, lat] // GeoJSON expects [longitude, latitude]
+            coordinates: [lat, lng] // GeoJSON expects [longitude, latitude]
         };
       } else {
           console.error('Invalid coordinates provided');
