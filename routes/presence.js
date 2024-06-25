@@ -40,12 +40,25 @@ router.post('/checkin', upload.single('images'), validatePresence, async (req, r
     }
     const { employeeId, presenceTypeId } = req.body;
     const checkInTime = req.currentTime().format(); // Waktu GMT +7
+    let coordinates = {};
+    if(req.body.coordinates) {
+      let lat, lng;
+      [lat, lng] = req.body.coordinates.split(',').map(Number);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        coordinates = {
+            type: "Point",
+            coordinates: [lng, lat] // GeoJSON expects [longitude, latitude]
+        };
+      } else {
+          console.error('Invalid coordinates provided');
+      }
+    }
     const newPresence = await db.Presence.create({
       employeeId,
       presenceTypeId,
       checkIn: checkInTime,
       checkInImages: req.file.path,
-      checkInCoordinates: req.body.coordinates
+      checkInCoordinates: coordinates,
     });
     res.json(newPresence);
     
@@ -80,6 +93,20 @@ router.post('/checkout',upload.single('images'), validatePresence, async (req, r
     const { employeeId } = req.body;
     
     const now = req.currentTime().format();
+    
+    let coordinates = {};
+    if(req.body.coordinates) {
+      let lat, lng;
+      [lat, lng] = req.body.coordinates.split(',').map(Number);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        coordinates = {
+            type: "Point",
+            coordinates: [lng, lat] // GeoJSON expects [longitude, latitude]
+        };
+      } else {
+          console.error('Invalid coordinates provided');
+      }
+    }
 
     const presence = await db.Presence.findOne({
       where: {
@@ -96,7 +123,7 @@ router.post('/checkout',upload.single('images'), validatePresence, async (req, r
     if (presence) {
       presence.checkOut = req.currentTime().format();
       presence.checkOutImages= req.file.path;
-      presence.checkOutCoordinates = req.body.coordinates;
+      presence.checkOutCoordinates = coordinates;
       await presence.save();
       
       upload.single('checkOutImages');
@@ -118,10 +145,10 @@ router.get('/', async (req, res) => {
   const presences = await db.Presence.findAll({
     include: [
       {
-        model : db.Employee
+        model : db.Employee, as: 'Employee'
       },
       {
-        model : db.PresenceType
+        model : db.PresenceType, as: 'PresenceType'
       }
     ]})
   res.json(presences);
@@ -157,5 +184,26 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'An error occurred during delete process', details: error.message });
   }
 })
+
+
+function stringToGeoJSON(coordString) {
+  try {
+      // Memisahkan string koordinat menjadi longitude dan latitude
+      const parts = coordString.split(',').map(part => parseFloat(part.trim()));
+      const longitude = parts[0];
+      const latitude = parts[1];
+
+      // Membuat objek GeoJSON Point
+      const geoJSON = {
+          type: 'Point',
+          coordinates: [longitude, latitude]
+      };
+
+      return geoJSON;
+  } catch (error) {
+      console.error('Error parsing coordinate string:', error);
+      return null; // Mengembalikan null atau penanganan error lainnya
+  }
+}
 
 module.exports = router;

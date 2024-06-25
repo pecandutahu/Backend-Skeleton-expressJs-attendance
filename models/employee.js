@@ -1,6 +1,6 @@
 
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('Employee', {
+    const Employee = sequelize.define('Employee', {
         employeeId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -22,4 +22,14 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         paranoid : true //soft deletes
     });
+
+
+    Employee.associate = models => {
+        Employee.hasMany(models.Presence, {
+            foreignKey: 'employeeId',
+            as: 'presences'
+        });
+    };
+
+    return Employee;
 };
